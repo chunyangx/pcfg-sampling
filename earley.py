@@ -110,9 +110,6 @@ class Earley(object):
 
         # start items of the kind
         # GOAL -> * ROOT, where * is an intial state of the wfsa
-        for start in wfsa.iterinitial():
-          print "START", start
-          print "AXIOMS", self.axioms(root,start) 
         if not any(self.axioms(root, start) for start in wfsa.iterinitial()):
             raise ValueError('No rule for the start symbol %s' % root)
         new_roots = set()
