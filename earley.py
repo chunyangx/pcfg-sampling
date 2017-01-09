@@ -110,6 +110,9 @@ class Earley(object):
 
         # start items of the kind
         # GOAL -> * ROOT, where * is an intial state of the wfsa
+        for start in wfsa.iterinitial():
+          print "START", start
+          print "AXIOMS", self.axioms(root,start) 
         if not any(self.axioms(root, start) for start in wfsa.iterinitial()):
             raise ValueError('No rule for the start symbol %s' % root)
         new_roots = set()
@@ -148,7 +151,13 @@ class Earley(object):
         lhs = make_symbol(item.rule.lhs, item.start, item.dot)
         positions = item.inner + (item.dot,)
         rhs = [make_symbol(sym, positions[i], positions[i + 1]) for i, sym in enumerate(item.rule.rhs)]
-        return Rule(lhs, rhs, item.rule.log_prob)
+        # compute the wfsa contribution (assuming that it is with a log-semiring)
+        wfsa_weight = 0.0
+        for i, sym in enumerate(item.rule.rhs):
+            if is_terminal(sym):
+                # assuming a log from positions[i] to positions[i + 1] with label `sym`
+                wfsa_weight += self._wfsa.arc_weight(positions[i], positions[i + 1], sym)
+        return Rule(lhs, rhs, item.rule.log_prob + wfsa_weight)
 
     def get_cfg(self, goal, root):
         """
@@ -165,6 +174,7 @@ class Earley(object):
         itergenerating = self._agenda.itergenerating
         itercomplete = self._agenda.itercomplete
 
+        # create all intersected rules whose lefthand side symbol lhs spans from start to end
         def make_rules(lhs, start, end):
             if (start, lhs, end) in processed:
                 return
@@ -183,7 +193,8 @@ class Earley(object):
                 continue
             for end in itertools.ifilter(lambda q: fsa.is_final(q), ends):
                 make_rules(root, start, end)
+                final_weight = fsa.get_final_weight(end)
                 G.add(Rule(make_symbol(goal, None, None),
-                           [make_symbol(root, start, end)], 0.0))
+                           [make_symbol(root, start, end)], final_weight))
 
         return G

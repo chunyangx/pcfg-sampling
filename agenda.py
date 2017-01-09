@@ -169,7 +169,8 @@ def get_cfg(goal, root, fsa, agenda):
             continue
         for end in itertools.ifilter(lambda q: fsa.is_final(q), ends):
             make_rules(root, start, end)
+            final_weight = fsa.get_final_weight(end)
             G.add(Rule(make_symbol(goal, None, None),
-                       [make_symbol(root, start, end)], 0.0))
+                       [make_symbol(root, start, end)], final_weight))
 
     return G

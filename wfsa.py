@@ -17,6 +17,7 @@ class WDFSA(object):
         self._initial_states = set()
         self._final_states = set()
         self._vocabulary = set()
+        self._final_states_weight = dict()
 
     def n_states(self):
         """Number of states."""
@@ -99,9 +100,14 @@ class WDFSA(object):
         """Make a state initial."""
         self._initial_states.add(state)
 
-    def make_final(self, state):
-        """Make a state final."""
+    def make_final(self, state, weight=0.0):
+        """Make a state final with certain weight"""
         self._final_states.add(state)
+        self._final_states_weight[state] = weight
+    
+    def get_final_weight(self, final):
+        """Get the weight of a final state. If the state is not a final one, throw exception"""
+        return self._final_states_weight[final]
 
     def path_weight(self, path, semiring):
         """Returns the weight of a path given by a sequence of tuples of the kind (origin, destination, sym)"""
