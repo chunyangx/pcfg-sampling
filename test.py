@@ -42,8 +42,8 @@ def test_intersection_weights():
   wfsa.make_initial(0)
   wfsa.make_final(0)
   # Intersection
-  parser1 = Earley(wcfg, wfsa)
-  forest1 = parser1.do('[S]', '[GOAL]')
+  parser = Earley(wcfg, wfsa)
+  forest = parser.do('[S]', '[GOAL]')
   if forest.get('[NN,0-0]')[1].log_prob == -1.7039:
     print "Succeed, the earley intersection correctly changes the weight for a unigram automata"
 if __name__ == "__main__":
